@@ -69,24 +69,28 @@ class _LoginViewState extends State<LoginView> {
                       backgroundColor: MaterialStatePropertyAll(Colors.white),
                     ),
                     onPressed: () async {
-                      try{
+                      try {
                         final email = _email.text;
                         final password = _password.text;
                         final userCredential = await FirebaseAuth.instance
                             .signInWithEmailAndPassword(
-                            email: email, password: password);
+                                email: email, password: password);
                         print(userCredential);
-                      } on FirebaseAuthException catch (e){
-                        if(e.code == 'user-not-found'){
+                      } on FirebaseAuthException catch (e) {
+                        if (e.code == 'user-not-found') {
                           print('User Not Found');
-                        } else if(e.code == 'wrong-password'){
+                        } else if (e.code == 'wrong-password') {
                           print('Wrong Password');
                         }
                       }
-
                     },
                     child: const Text('Login'),
                   ),
+                  TextButton(
+                      onPressed: () {
+                        Navigator.pushNamedAndRemoveUntil(context, '/register', (route) => false);
+                      },
+                      child: const Text("Not Registered yet? Register Here!"))
                 ],
               );
             default:
