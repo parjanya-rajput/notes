@@ -1,4 +1,4 @@
-# first_flutter
+# Notes
 
 Learning Flutter and Dart
 
