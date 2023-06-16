@@ -5,7 +5,7 @@ import 'package:first_flutter/views/register_view.dart';
 import 'package:first_flutter/views/verify_email_view.dart';
 import 'package:flutter/material.dart';
 import 'firebase_options.dart';
-import 'dart:developer' as devtools show log;
+// import 'dart:developer' as devtools show log;
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,6 +21,7 @@ void main() {
           '/login': (context) => const LoginView(),
           '/register': (context) => const RegisterView(),
           '/verifyEmail/': (context) => const VerifyEmailPageView(),
+          '/notes': (context) => const NoteView(),
         }),
   );
 }
@@ -72,14 +73,16 @@ class _NoteViewState extends State<NoteView> {
         title: const Text('Main UI'),
         backgroundColor: Colors.blueAccent,
         actions: [
-          PopupMenuButton<MenuAction>(
-              onSelected: (value) async {
-            switch(value){
+          PopupMenuButton<MenuAction>(onSelected: (value) async {
+            switch (value) {
               case MenuAction.logout:
                 final shouldLogout = await showLogOutDialog(context);
-                if(shouldLogout){
+                if (shouldLogout) {
                   await FirebaseAuth.instance.signOut();
-                  Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    '/login',
+                    (route) => false,
+                  );
                 }
             }
           }, itemBuilder: (context) {
