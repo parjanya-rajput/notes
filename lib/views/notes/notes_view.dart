@@ -2,8 +2,8 @@ import 'package:first_flutter/services/auth/auth_service.dart';
 import 'package:first_flutter/services/crud/notes_service.dart';
 import 'package:flutter/material.dart';
 
-import '../constants/routes.dart';
-import '../enums/menu_action.dart';
+import '../../constants/routes.dart';
+import '../../enums/menu_action.dart';
 
 class NoteView extends StatefulWidget {
   const NoteView({Key? key}) : super(key: key);
@@ -33,7 +33,7 @@ class _NoteViewState extends State<NoteView> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Main UI'),
+          title: const Text('Your Notes'),
           backgroundColor: Colors.blueAccent,
           actions: [
             PopupMenuButton<MenuAction>(onSelected: (value) async {
@@ -55,6 +55,13 @@ class _NoteViewState extends State<NoteView> {
               ];
             })
           ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.of(context).pushNamed(newNoteRoute);
+          },
+          backgroundColor: Colors.blueAccent,
+          child: const Icon(Icons.add),
         ),
         body: FutureBuilder(
             future: _notesService.getOrCreateUser(email: userEmail),
