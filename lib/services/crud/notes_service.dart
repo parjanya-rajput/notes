@@ -14,20 +14,24 @@ class NotesService {
   //Singleton Application
   //Singleton is a class which can be instantiated only once during its application
   static final NotesService _shared = NotesService._sharedInstance();
-  NotesService._sharedInstance();
+  NotesService._sharedInstance() {
+    _notesStreamController = StreamController<List<DatabaseNote>>.broadcast(
+      onListen: (){
+        _notesStreamController.sink.add(_notes);
+      },
+    );
+  }
   factory NotesService() => _shared;
 
-  final _notesStreamController =
-      StreamController<List<DatabaseNote>>.broadcast();
-
+  late final StreamController<List<DatabaseNote>> _notesStreamController;
   Stream<List<DatabaseNote>> get allNote => _notesStreamController.stream;
 
-  Future<DatabaseUser> getOrCreateUser({required String email}){
+  Future<DatabaseUser> getOrCreateUser({required String email}) async {
     try{
-      final user = fetchUser(email: email);
+      final user = await fetchUser(email: email);
       return user;
     } on CouldNotFindUser{
-      final createdUser = createUser(email: email);
+      final createdUser = await createUser(email: email);
       return createdUser;
     } catch(e){
       rethrow;
@@ -310,7 +314,7 @@ const createUserTable = '''
 	    "email"	TEXT NOT NULL UNIQUE,
 	    PRIMARY KEY("id" AUTOINCREMENT)
     );''';
-const createNoteTable = '''CREATE TABLE IF NOT EXISTS "notes" (
+const createNoteTable = '''CREATE TABLE IF NOT EXISTS "note" (
         "id"	INTEGER NOT NULL,
         "user_id"	INTEGER NOT NULL,
         "text"	TEXT,
