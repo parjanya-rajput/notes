@@ -54,7 +54,7 @@ class _NoteViewState extends State<NoteView> {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            Navigator.of(context).pushNamed(newNoteRoute);
+            Navigator.of(context).pushNamed(createUpdateNoteRoute);
           },
           backgroundColor: Colors.blueAccent,
           child: const Icon(Icons.add),
@@ -73,9 +73,18 @@ class _NoteViewState extends State<NoteView> {
                             if (snapshot.hasData) {
                               final allNotes =
                                   snapshot.data as List<DatabaseNote>;
-                              return NotesListView(notes: allNotes, onDeleteNote: (note) async {
-                                await _notesService.deleteNote(id: note.id);
-                              });
+                              return NotesListView(
+                                notes: allNotes,
+                                onDeleteNote: (note) async {
+                                  await _notesService.deleteNote(id: note.id);
+                                },
+                                onTap: (DatabaseNote note) {
+                                  Navigator.of(context).pushNamed(
+                                    createUpdateNoteRoute,
+                                    arguments: note,
+                                  );
+                                },
+                              );
                             } else {
                               return const CircularProgressIndicator();
                             }
