@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:first_flutter/extensions/lists/filter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
@@ -11,32 +12,55 @@ class NotesService {
 
   List<DatabaseNote> _notes = [];
 
+  DatabaseUser? _user;
+
   //Singleton Application
   //Singleton is a class which can be instantiated only once during its application
   static final NotesService _shared = NotesService._sharedInstance();
+
   NotesService._sharedInstance() {
     _notesStreamController = StreamController<List<DatabaseNote>>.broadcast(
-      onListen: (){
+      onListen: () {
         _notesStreamController.sink.add(_notes);
       },
     );
   }
+
   factory NotesService() => _shared;
 
   late final StreamController<List<DatabaseNote>> _notesStreamController;
-  Stream<List<DatabaseNote>> get allNote => _notesStreamController.stream;
 
-  Future<DatabaseUser> getOrCreateUser({required String email}) async {
-    try{
+  Stream<List<DatabaseNote>> get allNote =>
+    _notesStreamController.stream.filter((note) {
+      final currentUser = _user;
+      if(currentUser != null){
+        return note.userId == currentUser.id;
+      } else {
+        throw UserShouldBeSetBeforeReadingAllNotes();
+      }
+    });
+
+  Future<DatabaseUser> getOrCreateUser({
+    required String email,
+    bool setAsCurrentUser = true,
+  }) async {
+    try {
       final user = await fetchUser(email: email);
+      if(setAsCurrentUser){
+        _user = user;
+      }
       return user;
-    } on CouldNotFindUser{
+    } on CouldNotFindUser {
       final createdUser = await createUser(email: email);
+      if(setAsCurrentUser){
+        _user = createdUser;
+      }
       return createdUser;
-    } catch(e){
+    } catch (e) {
       rethrow;
     }
   }
+
   Future<void> _cacheNotes() async {
     final allNotes = await getAllNotes();
     _notes = allNotes.toList();
@@ -53,9 +77,14 @@ class NotesService {
     //make sure note exists
     await fetchNote(id: note.id);
     //update db
-    final updateCount = await db.update(noteTable, {
-      textColumn: text,
-    });
+    final updateCount = await db.update(
+      noteTable,
+      {
+        textColumn: text,
+      },
+      where: 'id = ?',
+      whereArgs: [note.id],
+    );
     if (updateCount == 0) {
       throw CouldNotUpdateNote();
     } else {
@@ -220,13 +249,14 @@ class NotesService {
     }
   }
 
-  Future<void> _ensureDbIsOpen() async{
-    try{
+  Future<void> _ensureDbIsOpen() async {
+    try {
       await open();
-    } on DatabaseAlreadyOpenException{
+    } on DatabaseAlreadyOpenException {
       //empty
     }
   }
+
   Future<void> open() async {
     if (_db != null) {
       throw DatabaseAlreadyOpenException();
