@@ -1,10 +1,13 @@
 import 'package:first_flutter/services/auth/auth_service.dart';
+import 'package:first_flutter/services/auth/bloc/auth_bloc.dart';
+import 'package:first_flutter/services/auth/bloc/auth_event.dart';
 import 'package:first_flutter/services/cloud/cloud_note.dart';
 import 'package:first_flutter/services/cloud/firebase_cloud_storage.dart';
 
 // import 'package:first_flutter/services/crud/notes_service.dart';
 import 'package:first_flutter/views/notes/note_list_view.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../Utilities/dialogs/log_out_dialog.dart';
 import '../../constants/routes.dart';
@@ -40,10 +43,8 @@ class _NoteViewState extends State<NoteView> {
                 case MenuAction.logout:
                   final shouldLogout = await showLogOutDialog(context);
                   if (shouldLogout) {
-                    await AuthService.firebase().logOut();
-                    Navigator.of(context).pushNamedAndRemoveUntil(
-                      loginRoute,
-                      (route) => false,
+                    context.read<AuthBloc>().add(
+                          const AuthEventLogOut(),
                     );
                   }
               }
@@ -73,7 +74,8 @@ class _NoteViewState extends State<NoteView> {
                     return NotesListView(
                       notes: allNotes,
                       onDeleteNote: (note) async {
-                        await _notesService.deleteNote(documentId: note.documentId);
+                        await _notesService.deleteNote(
+                            documentId: note.documentId);
                       },
                       onTap: (CloudNote note) {
                         Navigator.of(context).pushNamed(
